@@ -86,10 +86,40 @@ def add_transaction():
 def predict_transactions():
     df_lst = []
     for data in enumerate(box.get(0, END)):
-        lst = str(data).split("  -  ")
-        df_line = np.array(lst)
-        df_lst.append(df_line)
+        lst = str(data[1]).split("  -  ")
+        lst_types_converted = [int(lst[1])]
+        aux_type = -1
+        if lst[0] == 'PAYMENT':
+            aux_type = 0
+        elif lst[0] == 'DEBIT':
+            aux_type = 1
+        elif lst[0] == 'CASH_OUT':
+            aux_type = 2
+        elif lst[0] == 'TRANSFER':
+            aux_type = 3
+        elif lst[0] == 'CASH_IN':
+            aux_type = 4
+        # !!! Remember to make use of the names (hashing method)
+        lst_types_converted.append(aux_type)  # type
+        lst_types_converted.append(float(lst[2]))  # amount
+        # lst_types_converted.append(lst[3])  # origin name
+        lst_types_converted.append(float(lst[4]))  # old balance origin
+        lst_types_converted.append(float(lst[5]))  # new balance origin
+        # lst_types_converted.append(lst[6])  # destination name
+        lst_types_converted.append(float(lst[7]))  # old balance destination
+        lst_types_converted.append(float(lst[8]))  # new balance destination
+        df_lst.append(lst_types_converted)
     y = fp.final_model.predict(df_lst)
+
+    # displaying which transactions are fraudulent
+    iterator = 0
+    for data in enumerate(box.get(0, END)):
+        box.delete(0, END)
+        if y[iterator] == 1:
+            box.insert("end", data[1] + " is fraudulent")
+        else:
+            box.insert("end", data[1] + " is ok")
+        iterator = iterator + 1
 
 
 window = tk.Tk()
@@ -134,6 +164,16 @@ nameDest_text = tk.Text(canvas, fg='white', bg='grey', height=1, width=70)
 oldbalanceDest_text = tk.Text(canvas, fg='white', bg='grey', height=1, width=70)
 newbalanceDest_text = tk.Text(canvas, fg='white', bg='grey', height=1, width=70)
 
+time_text.insert(0.0, "1")
+type_text.insert(0.0, "PAYMENT")
+amount_text.insert(0.0, "45.0")
+nameOrig_text.insert(0.0, "gdfgf")
+oldbalanceOrg_text.insert(0.0, "45.0")
+newbalanceOrig_text.insert(0.0, "0.0")
+nameDest_text.insert(0.0, "gfgfd")
+oldbalanceDest_text.insert(0.0, "45.0")
+newbalanceDest_text.insert(0.0, "90.0")
+
 canvas.create_window(500, 30, window=time_text)
 canvas.create_window(500, 60, window=type_text)
 canvas.create_window(500, 90, window=amount_text)
@@ -155,5 +195,6 @@ canvas.create_window(250, 490, window=add_transaction_button)
 canvas.create_window(550, 490, window=predict_button)
 
 window.resizable(0, 0)
-print('ok')
 window.mainloop()
+
+

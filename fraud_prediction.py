@@ -20,7 +20,7 @@ def score_model(X, y, kf):
         accuracy_scores.append(accuracy_score(y_test, y_pred))
         precision_scores.append(precision_score(y_test, y_pred))
         recall_scores.append(recall_score(y_test, y_pred))
-        f1_scores.append(f1_score(y_test, y_pred))
+        f1_scores.append(f1_score(y_test, y_pred, average='weighted', labels=np.unique(y_pred)))
     print("accuracy:", np.mean(accuracy_scores))
     print("precision:", np.mean(precision_scores))
     print("recall:", np.mean(recall_scores))
@@ -54,6 +54,7 @@ y = credit_data['isFraud'].values
 
 kf = KFold(n_splits=10, shuffle=True)
 
-final_model = LogisticRegression(max_iter=200000)
+# final_model = LogisticRegression(max_iter=200000)
+final_model = LogisticRegression()
 final_model.fit(X, y)
-score_model(X, y, kf)
+# score_model(X, y, kf)
