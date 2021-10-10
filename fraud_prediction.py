@@ -5,6 +5,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 pd.options.mode.chained_assignment = None  # default='warn'
+final_model = LogisticRegression(max_iter=200000)
+
 
 def score_model(X, y, kf):
     accuracy_scores = []
@@ -42,19 +44,16 @@ def change_data(credit):
     return credit
 
 
-file_path = 'credit_datasheet_head.csv'
-credit_data = pd.read_csv(file_path)
-print(credit_data.shape)
-credit_data = change_data(credit_data)
-features = ['step', 'type', 'amount', 'oldbalanceOrg', 'newbalanceOrig',
-            'oldbalanceDest', 'newbalanceDest']
+def fit_model():
+    file_path = 'credit_datasheet_head.csv'
+    credit_data = pd.read_csv(file_path)
+    print(credit_data.shape)
+    credit_data = change_data(credit_data)
+    features = ['step', 'type', 'amount', 'oldbalanceOrg', 'newbalanceOrig',
+                'oldbalanceDest', 'newbalanceDest']
 
-X = credit_data[features].values
-y = credit_data['isFraud'].values
-
-kf = KFold(n_splits=10, shuffle=True)
-
-# final_model = LogisticRegression(max_iter=200000)
-final_model = LogisticRegression()
-final_model.fit(X, y)
-# score_model(X, y, kf)
+    X = credit_data[features].values
+    y = credit_data['isFraud'].values
+    kf = KFold(n_splits=10, shuffle=True)
+    final_model.fit(X, y)
+    score_model(X, y, kf)

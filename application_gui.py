@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import BOTH, TOP, END
 import tkinter.messagebox
-
+import threading
 import numpy as np
 import pandas as pd
 from PIL import ImageTk, Image
@@ -84,6 +84,9 @@ def add_transaction():
 
 
 def predict_transactions():
+    if t1.is_alive():
+        tk.messagebox.showinfo('Error', 'ML model not fit yet')
+        return
     df_lst = []
     for data in enumerate(box.get(0, END)):
         lst = str(data[1]).split("  -  ")
@@ -109,7 +112,10 @@ def predict_transactions():
         lst_types_converted.append(float(lst[7]))  # old balance destination
         lst_types_converted.append(float(lst[8]))  # new balance destination
         df_lst.append(lst_types_converted)
-    y = fp.final_model.predict(df_lst)
+    if len(df_lst) != 0:
+        y = fp.final_model.predict(df_lst)
+    else:
+        return
 
     # displaying which transactions are fraudulent
     iterator = 0
@@ -195,6 +201,8 @@ canvas.create_window(250, 490, window=add_transaction_button)
 canvas.create_window(550, 490, window=predict_button)
 
 window.resizable(0, 0)
-window.mainloop()
 
+t1 = threading.Thread(target=fp.fit_model, args=())
+t1.start()
+window.mainloop()
 
