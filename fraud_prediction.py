@@ -3,7 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import KFold
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_curve
+from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import precision_recall_fscore_support
 
 pd.options.mode.chained_assignment = None  # default='warn'
 final_model = LogisticRegression(max_iter=200000)
@@ -15,11 +18,11 @@ def score_model(X, y, kf):
     recall_scores = []
     f1_scores = []
     for train_index, test_index in kf.split(X):
-        X_train, X_test = X[train_index], X[test_index]
+        x_train, x_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
         model = LogisticRegression(max_iter=200000)
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
+        model.fit(x_train, y_train)
+        y_pred = model.predict(x_test)
         accuracy_scores.append(accuracy_score(y_test, y_pred))
         precision_scores.append(precision_score(y_test, y_pred))
         recall_scores.append(recall_score(y_test, y_pred))
@@ -89,6 +92,58 @@ def plot_data(data):
     plt.show()
 
 
+def evaluate_model():
+    # TP -> true positives
+    # TN -> true negatives
+    # FP -> false positives
+    # FN -> false negatives
+    file_path = 'credit_datasheet_head.csv'
+    credit_data = pd.read_csv(file_path)
+    credit_data = change_data(credit_data)
+    features = ['step', 'type', 'amount', 'oldbalanceOrg', 'oldbalanceDest']
+
+    x = credit_data[features].values
+    y = credit_data['isFraud'].values
+    final_model.fit(x, y)
+    y_pred = final_model.predict(x)
+    accuracy = accuracy_score(y, y_pred)
+    precision = precision_score(y, y_pred)
+    recall = recall_score(y, y_pred)
+    f1 = f1_score(y, y_pred)
+    print(accuracy)
+    print(precision)
+    print(recall)
+    print(f1)
+    # printing the confusion matrix
+    conf_matrix = confusion_matrix(y, y_pred)
+    print(conf_matrix)
+
+    # splitting up the data
+    # if ran with random_state then it will produce the same
+    # result if ran multiple times
+    x_train, x_test, y_train, \
+        y_test = train_test_split(x, y, train_size=0.8)
+    model = LogisticRegression()
+    model.fit(x_train, y_train)
+    y_pred = model.predict_proba(x_test)[:, 1] > 0.4
+    p, r, f, s = precision_recall_fscore_support(y_test, y_pred)
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    print(conf_matrix)
+    print(p[0])
+    print(r[0])
+    print(f[0])
+    print(s[0])
+
+    # plot the roc curve
+    fpr, tpr, threshold = roc_curve(y_test, y_pred)
+    plt.plot(fpr, tpr)
+    plt.plot([0, 1], [0, 1], linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.xlabel('1 - specificity')
+    plt.ylabel('sensitivity')
+    plt.show()
+
+
 def fit_model():
     file_path = 'credit_datasheet_head.csv'
     credit_data = pd.read_csv(file_path)
@@ -102,8 +157,26 @@ def fit_model():
     print(final_model.coef_, final_model.intercept_)
     print(final_model.score(x, y))
 
-    # kf = KFold(n_splits=10, shuffle=True)
-    # score_model(X, y, kf)
+
+def see_kfold_evaluation():
+    file_path = 'credit_datasheet_head.csv'
+    credit_data = pd.read_csv(file_path)
+    credit_data = change_data(credit_data)
+    features = ['step', 'type', 'amount', 'oldbalanceOrg', 'oldbalanceDest']
+
+    x = credit_data[features].values
+    y = credit_data['isFraud'].values
+    final_model.fit(x, y)
+    print('The coefficients are:')
+    print(final_model.coef_, final_model.intercept_)
+    print(final_model.score(x, y))
+
+    kf = KFold(n_splits=10, shuffle=True)
+    score_model(x, y, kf)
 
 
-view_data()
+def call_auxiliary_functions():
+    fit_model()
+    see_kfold_evaluation()
+    view_data()
+    evaluate_model()

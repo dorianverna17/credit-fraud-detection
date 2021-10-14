@@ -107,10 +107,10 @@ def predict_transactions():
         lst_types_converted.append(float(lst[2]))  # amount
         # lst_types_converted.append(lst[3])  # origin name
         lst_types_converted.append(float(lst[4]))  # old balance origin
-        lst_types_converted.append(float(lst[5]))  # new balance origin
+        # lst_types_converted.append(float(lst[5]))  # new balance origin
         # lst_types_converted.append(lst[6])  # destination name
         lst_types_converted.append(float(lst[7]))  # old balance destination
-        lst_types_converted.append(float(lst[8]))  # new balance destination
+        # lst_types_converted.append(float(lst[8]))  # new balance destination
         df_lst.append(lst_types_converted)
     if len(df_lst) != 0:
         y = fp.final_model.predict(df_lst)
@@ -202,7 +202,7 @@ canvas.create_window(550, 490, window=predict_button)
 
 window.resizable(0, 0)
 
-t1 = threading.Thread(target=fp.fit_model, args=())
+t1 = threading.Thread(target=fp.call_auxiliary_functions, args=())
 t1.start()
 window.mainloop()
 
